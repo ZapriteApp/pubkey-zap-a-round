@@ -1,103 +1,185 @@
-import Image from "next/image";
+'use client'
+
+import { useState } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { ArrowRight } from 'lucide-react'
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isOpen, setIsOpen] = useState(false)
+  const [customAmount, setCustomAmount] = useState<number | null>(null)
+  const [formData, setFormData] = useState({
+    name: '',
+    note: '',
+    amount: '0',
+  })
+  const [isLoading, setIsLoading] = useState(false)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleDonateClick = (amount?: number) => {
+    setCustomAmount(amount || null)
+    setIsOpen(true)
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      // Generate externalUniqId
+      const timestamp = Date.now()
+      const externalUniqId = `pkzar_${timestamp}`
+
+      // Store in localStorage
+      localStorage.setItem('cart_id', externalUniqId)
+
+      // Prepare order data
+      const amount = customAmount || parseFloat(formData.amount)
+
+      // Create order using our API route
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL}/api/create-order`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount,
+            name: formData.name,
+            note: formData.note,
+            externalUniqId,
+          }),
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to create order')
+      }
+
+      const data = await response.json()
+
+      // Redirect to the payment URL
+      window.location.href = data.checkoutUrl
+    } catch (error) {
+      console.error('Error creating order:', error)
+      // TODO: Show error message to user
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="items-center justify-items-center p-8 gap-16 sm:p-12 font-[family-name:var(--font-geist-sans)]">
+      <main className="flex flex-col gap-[32px] row-start-2 items-center">
+        <div className="flex gap-4 items-center text-center flex-col">
+          <h1 className="text-6xl uppercase text-white font-[family-name:var(--font-jersey-25)] sm:text-7xl md:text-8xl">
+            Zap-A-Round
+          </h1>
+          <h3 className="text-3xl uppercase font-jersey-25 sm:text-4xl md:text-5xl">
+            Drop some sats behind the bar at PubKey.
+          </h3>
+          <p className="text-xl font-medium">
+            All donations will be added to an open tab for anyone currently at
+            the bar.
+          </p>
+        </div>
+        <div className="flex gap-4 items-center flex-col w-full sm:flex-row">
+          <div className="grid grid-cols-2 mx-auto sm:grid-cols-3 gap-4 w-full max-w-[24rem]">
+            {[5, 25, 50, 100, 250, 500].map((amount) => (
+              <Button
+                size="lg"
+                key={amount}
+                onClick={() => handleDonateClick(amount)}
+                className="bg-white text-black px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-all"
+              >
+                ${amount.toLocaleString()}
+              </Button>
+            ))}
+            <Button
+              size="lg"
+              onClick={() => handleDonateClick()}
+              className="bg-white text-black px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-all col-span-2 sm:col-span-3"
+            >
+              Custom Amount
+            </Button>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="p-12 sm:max-w-[480px] border-0 bg-white">
+          <DialogHeader>
+            <DialogTitle>Make a Donation</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {customAmount === null ? (
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount ($)</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  min="1"
+                  step="1.00"
+                  required
+                  value={formData.amount}
+                  onChange={(e) =>
+                    setFormData({ ...formData, amount: e.target.value })
+                  }
+                  placeholder="Enter an amount ..."
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Amount</Label>
+                <div className="text-2xl font-medium">
+                  ${customAmount.toLocaleString()}
+                </div>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="name">Name (Optional)</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                placeholder="Your name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="note">Note (Optional)</Label>
+              <Textarea
+                id="note"
+                value={formData.note}
+                onChange={(e) =>
+                  setFormData({ ...formData, note: e.target.value })
+                }
+                placeholder="Add a note to your donation"
+              />
+            </div>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading
+                ? 'Processing...'
+                : `Donate $${customAmount || formData.amount} Now`}
+              <ArrowRight className="ml-1" />
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
-  );
+  )
 }
