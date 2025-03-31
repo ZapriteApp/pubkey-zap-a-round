@@ -94,7 +94,7 @@ function PaymentContent() {
     const usdAmount = (
       order.transactions[0].amountInOrderCurrency / 100
     ).toLocaleString('en-US', { minimumFractionDigits: 2 })
-    const text = `Just dropped ${amount} sats ($${usdAmount} USD) behind the bar at @PubKey\n\n Go grab a beer on me! 🍻\n\nJoin the round at zaparound.pubkey.com`
+    const text = `Just dropped ${amount} sats ($${usdAmount} USD) behind the bar at @PubKey\n\n Go grab a beer on me! 🍻\n\nJoin the round at pubkey.zaprite.dev`
 
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
     window.open(url, '_blank')
