@@ -86,9 +86,10 @@ export default function Home() {
           <h3 className="text-3xl uppercase font-jersey-25 sm:text-4xl md:text-5xl">
             Drop some sats behind the bar at PubKey.
           </h3>
-          <p className="text-xl font-medium">
+          <p className="text-xl font-medium max-w-[43rem]">
             All donations will be added to an open tab for anyone currently at
-            the bar.
+            the bar. If the bar is closed, your sats will be added to the tab
+            the next day.
           </p>
         </div>
         <div className="flex gap-4 items-center flex-col w-full sm:flex-row">
