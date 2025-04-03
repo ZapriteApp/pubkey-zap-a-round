@@ -26,6 +26,7 @@ export async function POST(request: Request) {
         note,
       },
       redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/payment?cart_id=${externalUniqId}`,
+      disablePaymentNotifs: true,
       sendReceiptToCustomer: false,
     }
 
