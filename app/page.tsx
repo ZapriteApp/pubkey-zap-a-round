@@ -77,7 +77,7 @@ export default function Home() {
   }
 
   return (
-    <div className="items-center justify-items-center p-8 gap-16 sm:p-12 font-[family-name:var(--font-geist-sans)]">
+    <div className="items-center justify-items-center p-4 gap-16 sm:p-12 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-[32px] row-start-2 items-center">
         <div className="flex gap-4 items-center text-center flex-col">
           <h1 className="text-6xl uppercase text-white font-[family-name:var(--font-jersey-25)] sm:text-7xl md:text-8xl">
@@ -113,6 +113,20 @@ export default function Home() {
             </Button>
           </div>
         </div>
+        <p className="text-center">
+          <strong>Visit PubKey</strong>
+          <br />
+          85 Washington Pl, New York, NY 10011
+          <br />
+          <a
+            className="underline hover:opacity-75 transition"
+            href="https://pubkey.bar/"
+            target="_blank"
+            rel="no referrer noopener"
+          >
+            https://pubkey.bar
+          </a>
+        </p>
       </main>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
